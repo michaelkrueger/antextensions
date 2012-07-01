@@ -12,7 +12,7 @@
 		<string property="test" value="unhappy" operation="substring" start="2" end="6" />
 		<echo>Test ${test} </echo>
 		
-		<property name="version" value="VERAS_V1.2.3.4" />
+		<property name="version" value="KKKKK_V1.2.3.4" />
 		<echo>version ${version} </echo>
 		<string property="subversion" value="${version}" operation="end" index="7" />
 		<echo>version ${subversion} </echo>
