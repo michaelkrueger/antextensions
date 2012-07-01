@@ -3,6 +3,9 @@
 <project name="test" default="test" basedir=".">
 	<taskdef name="string" classname="de.mk.ant.StringTask" classpath="bin"/>
 	
+	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="bin"/>
+	<typedef name="karotzaction" classname="de.mk.ant.KarotzTask$AntKarotzAction" classpath="bin"/>
+	
 	<target name="test" >
 		<echo>Test ${test} </echo>
 		<string property="test" value="unhappy" operation="start" index="2" />
@@ -17,6 +20,9 @@
 		<string property="subversion" value="${version}" operation="end" index="7" />
 		<echo>version ${subversion} </echo>
 		
+		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
+			<karotzaction name="name" />
+		</karotz>
 		
 	</target>		
 </project>	
