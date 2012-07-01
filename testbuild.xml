@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<project name="test" default="test" basedir=".">
+	<taskdef name="string" classname="de.mk.ant.StringTask" classpath="bin"/>
+	
+	<target name="test" >
+		<echo>Test ${test} </echo>
+		<string property="test" value="unhappy" operation="start" index="2" />
+		<echo>Test ${test} </echo>
+		<string property="test" value="unhappy" operation="end" index="2" />
+		<echo>Test ${test} </echo>
+		<string property="test" value="unhappy" operation="substring" start="2" end="6" />
+		<echo>Test ${test} </echo>
+		
+		<property name="version" value="VERAS_V1.2.3.4" />
+		<echo>version ${version} </echo>
+		<string property="subversion" value="${version}" operation="end" index="7" />
+		<echo>version ${subversion} </echo>
+		
+		
+	</target>		
+</project>	
