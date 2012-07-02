@@ -6,6 +6,9 @@ import java.util.Arrays;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
+import com.vmware.vim25.VirtualMachineCloneSpec;
+import com.vmware.vim25.VirtualMachineRelocateSpec;
+import com.vmware.vim25.mo.Datacenter;
 import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
@@ -14,14 +17,15 @@ import com.vmware.vim25.mo.VirtualMachine;
 
 
 
-public class VMPowerTask extends Task {
+public class VMCloneTask extends Task {
 
 	String host;
 	String username;
 	String password;
-	String vmname;
 	String operation;
-	
+	String vmbasis;
+	String vmclone;
+	String datacenter;
 	
 	public void execute() throws BuildException {
 		Operations operation = null;
@@ -45,16 +49,18 @@ public class VMPowerTask extends Task {
 				return;
 			}
 			VirtualMachine vm = (VirtualMachine) new InventoryNavigator(
-					rootFolder).searchManagedEntity("VirtualMachine", vmname);
+					rootFolder).searchManagedEntity("VirtualMachine", vmbasis );
 
-			if(vm==null) {
-				System.out.println("No VM " + vmname + " found");
+			Datacenter dc = (Datacenter) si.getSearchIndex().findByInventoryPath(getDatacenter());
+			
+			if(vm==null || dc==null) {
+				System.out.println("No VM " + vmbasis + " found or datacenter "+getDatacenter()+" found!");
 				si.getServerConnection().logout();
-				throw new BuildException("No VM " + vmname + " found");
+				throw new BuildException("No VM " + vmbasis + " found");
 			}
 
 
-			operation.execute(vm);
+			operation.execute(vm,dc, getVmclone());
 		} catch(Exception ex) {
 			throw new BuildException(ex);
 		} finally {
@@ -93,12 +99,12 @@ public class VMPowerTask extends Task {
 		this.password = password;
 	}
 
-	public String getVmname() {
-		return vmname;
+	public String getVmbasis() {
+		return vmbasis;
 	}
 
-	public void setVmname(String vmname) {
-		this.vmname = vmname;
+	public void setVmbasis(String vmname) {
+		this.vmbasis = vmname;
 	}
 	
 	public String getOperation() {
@@ -107,6 +113,22 @@ public class VMPowerTask extends Task {
 
 	public void setOperation(String operation) {
 		this.operation = operation;
+	}
+
+	public String getVmclone() {
+		return vmclone;
+	}
+
+	public void setVmclone(String vmclone) {
+		this.vmclone = vmclone;
+	}
+
+	public String getDatacenter() {
+		return datacenter;
+	}
+
+	public void setDatacenter(String datacenter) {
+		this.datacenter = datacenter;
 	}
 
 	private void listRootFolder(Folder rootFolder) throws Exception {
@@ -120,47 +142,39 @@ public class VMPowerTask extends Task {
 	}
 	
 	private enum Operations {
-		reboot { 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Reboot VM: "+vm.getName());
-				vm.rebootGuest();
+		clone { 
+			public void execute(VirtualMachine vm, Datacenter dc, String cloneName)  throws Exception {
+				System.out.println("Clone VM: "+vm.getName());
+				Folder vmFolder = dc.getVmFolder();
+				
+				   VirtualMachineCloneSpec cloneSpec = new VirtualMachineCloneSpec();
+				   cloneSpec.setLocation(new VirtualMachineRelocateSpec());
+				   cloneSpec.setPowerOn(false);
+				   cloneSpec.setTemplate(false);
+
+//				   cloneSpec.customization.identity.
+				   
+				   com.vmware.vim25.mo.Task task = vm.cloneVM_Task(vmFolder, cloneName, cloneSpec);
+				   System.out.println("Launching the VM clone task. It might take a while. Please wait for the result ...");
+				   
+				   String status = 	task.waitForMe();
+				   if(status==com.vmware.vim25.mo.Task.SUCCESS)
+				   {
+			            System.out.println("Virtual Machine got cloned successfully.");
+				   }
+				   else
+				   {
+					   System.out.println("Failure -: Virtual Machine cannot be cloned");
+				   }
+
 			}
-		},poweron{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Power on VM: "+vm.getName());
-				vm.powerOnVM_Task(null);
-			}
-		},poweroff{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Power off VM: "+vm.getName());
-				vm.powerOffVM_Task();
-			}
-		},reset{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Reset VM: "+vm.getName());
-				vm.resetVM_Task();
-			}
-		},standby{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Standby VM: "+vm.getName());
-				vm.standbyGuest();
-			}
-		},suspend{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Suspend VM: "+vm.getName());
-				vm.suspendVM_Task();
-			}
-		}, list{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("List VMs ");
-			}
-		},shutdown{ 
-			public void execute(VirtualMachine vm)  throws Exception {
-				System.out.println("Shutdown VM: "+vm.getName());
-				vm.shutdownGuest();
-			}
+		}, 
+		list { 
+				public void execute(VirtualMachine vm, Datacenter datacenter, String cloneName)  throws Exception {
+					System.out.println("List the VMs");
+				}
 		};
 		
-		abstract public void execute(VirtualMachine vm) throws Exception ;
+		abstract public void execute(VirtualMachine vm, Datacenter datacenter, String cloneName) throws Exception ;
 	};
 }

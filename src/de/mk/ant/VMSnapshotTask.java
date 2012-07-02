@@ -11,7 +11,6 @@ import com.vmware.vim25.VirtualMachineSnapshotInfo;
 import com.vmware.vim25.VirtualMachineSnapshotTree;
 import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
-import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
 import com.vmware.vim25.mo.VirtualMachineSnapshot;
@@ -19,7 +18,7 @@ import com.vmware.vim25.mo.VirtualMachineSnapshot;
 
 public class VMSnapshotTask extends Task {
 
-	String url;
+	String host;
 	String username;
 	String password;
 	String vmname;
@@ -28,8 +27,16 @@ public class VMSnapshotTask extends Task {
 	
 	
 	public void execute() throws BuildException {
+		Operations operation = null;
+		try {
+			operation = Operations.valueOf(getOperation());
+		} catch (IllegalArgumentException ex) {
+			throw new BuildException("Operation "+getOperation()+" unknown! Valid: "+Arrays.asList(Operations.values()));			
+		}
+
 		ServiceInstance si = null;
 		try {
+
 			si = new ServiceInstance(
 					new URL(getUrl()), getUsername(), getPassword() , true);
 
@@ -44,8 +51,6 @@ public class VMSnapshotTask extends Task {
 				throw new BuildException("No VM " + vmname + " found");
 			}
 
-			Operations operation = Operations.valueOf(getOperation());
-			if (operation==null) throw new BuildException("Operation "+getOperation()+" unknown! Valid: "+Arrays.asList(Operations.values()));
 
 			operation.execute(vm, getSnapshot());
 		} catch(Exception ex) {
@@ -58,13 +63,16 @@ public class VMSnapshotTask extends Task {
 	}
 
 
-
 	public String getUrl() {
-		return url;
+		return "https://"+host+"/sdk";
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public String getUsername() {
@@ -209,7 +217,7 @@ public class VMSnapshotTask extends Task {
 			}
 		}, removeall { 
 			public void execute(VirtualMachine vm, String snapshotname)  throws Exception {
-				System.out.println("Remove All Snapshots from VM "+vm.getName()+": Name:"+snapshotname);
+				System.out.println("Remove All Snapshots from VM "+vm.getName());
 				com.vmware.vim25.mo.Task task = vm.removeAllSnapshots_Task();      
 				if(task.waitForMe()== com.vmware.vim25.mo.Task.SUCCESS) 
 				{
@@ -218,7 +226,7 @@ public class VMSnapshotTask extends Task {
 			}
 		}, revert { 
 			public void execute(VirtualMachine vm, String snapshotname)  throws Exception {
-				System.out.println("Remove All Snapshots from VM "+vm.getName()+": Name:"+snapshotname);
+				System.out.println("Revert to Snapshot from VM "+vm.getName()+": Name:"+snapshotname);
 				VirtualMachineSnapshot vmsnap = getSnapshotInTree(
 				          vm, snapshotname);
 				      if(vmsnap!=null)

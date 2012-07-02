@@ -14,6 +14,7 @@ import com.vmware.vim25.VirtualCdromIsoBackingInfo;
 import com.vmware.vim25.VirtualDevice;
 import com.vmware.vim25.VirtualDeviceConfigSpec;
 import com.vmware.vim25.VirtualDeviceConfigSpecOperation;
+import com.vmware.vim25.VirtualDeviceConnectInfo;
 import com.vmware.vim25.VirtualIDEController;
 import com.vmware.vim25.VirtualMachineConfigInfo;
 import com.vmware.vim25.VirtualMachineConfigOption;
@@ -30,16 +31,23 @@ import com.vmware.vim25.mo.VirtualMachine;
 
 public class VMCDTask extends Task {
 
-	String url;
+	String host;
 	String username;
 	String password;
 	String vmname;
 	String operation;
-	String datastoreName;
-	String isoname;
+	String datastore;
+	String isofile;
 	
 	
 	public void execute() throws BuildException {
+		Operations operation = null;
+		try {
+			operation = Operations.valueOf(getOperation());
+		} catch (IllegalArgumentException ex) {
+			throw new BuildException("Operation "+getOperation()+" unknown! Valid: "+Arrays.asList(Operations.values()));			
+		}
+		
 		ServiceInstance si = null;
 		try {
 			si = new ServiceInstance(
@@ -56,10 +64,8 @@ public class VMCDTask extends Task {
 				throw new BuildException("No VM " + vmname + " found");
 			}
 
-			Operations operation = Operations.valueOf(getOperation());
-			if (operation==null) throw new BuildException("Operation "+getOperation()+" unknown! Valid: "+Arrays.asList(Operations.values()));
 
-			operation.execute(vm, getDatastoreName(), getIsoname());
+			operation.execute(vm, getDatastore(), getIsoFile());
 		} catch(Exception ex) {
 			throw new BuildException(ex);
 		} finally {
@@ -71,11 +77,15 @@ public class VMCDTask extends Task {
 
 
 	public String getUrl() {
-		return url;
+		return "https://"+host+"/sdk";
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public String getUsername() {
@@ -110,20 +120,20 @@ public class VMCDTask extends Task {
 		this.operation = operation;
 	}
 
-	public String getDatastoreName() {
-		return datastoreName;
+	public String getDatastore() {
+		return datastore;
 	}
 
-	public void setDatastoreName(String datastoreName) {
-		this.datastoreName = datastoreName;
+	public void setDatastore(String datastore) {
+		this.datastore = datastore;
 	}
 
-	public String getIsoname() {
-		return isoname;
+	public String getIsoFile() {
+		return isofile;
 	}
 
-	public void setIsoname(String isoname) {
-		this.isoname = isoname;
+	public void setIsoFile(String isoname) {
+		this.isofile = isoname;
 	}
 
 	
@@ -135,7 +145,8 @@ public class VMCDTask extends Task {
 				VirtualDeviceConfigSpec cdSpec = createMountCdConfigSpec(vm, dsName, isoName);
 				vmConfigSpec.setDeviceChange(new VirtualDeviceConfigSpec[]{cdSpec});
 				com.vmware.vim25.mo.Task task = vm.reconfigVM_Task(vmConfigSpec);
-				task.waitForMe();
+				String r = task.waitForTask();
+				System.out.println("Result: "+r);
 			}
 		}, unmount { 
 			public void execute(VirtualMachine vm, String dsName, String isoName)  throws Exception {
@@ -144,7 +155,8 @@ public class VMCDTask extends Task {
 				VirtualDeviceConfigSpec cdSpec = createUnmountCdConfigSpec( vm, isoName);
 				vmConfigSpec.setDeviceChange(new VirtualDeviceConfigSpec[]{cdSpec});
 				com.vmware.vim25.mo.Task task = vm.reconfigVM_Task(vmConfigSpec);
-				task.waitForMe();
+				String r = task.waitForTask();
+				System.out.println("Result: "+r);
 			}
 		}, list { 
 			public void execute(VirtualMachine vm, String dsName, String isoName)  throws Exception {
@@ -160,20 +172,24 @@ public class VMCDTask extends Task {
 	  {
 	    VirtualDeviceConfigSpec cdSpec = new VirtualDeviceConfigSpec();
 
-	    cdSpec.setOperation(VirtualDeviceConfigSpecOperation.add);         
-
-	    VirtualCdrom cdrom =  new VirtualCdrom();
+	    cdSpec.setOperation(VirtualDeviceConfigSpecOperation.edit);   
+	    
+	    VirtualCdrom cdrom = (VirtualCdrom)findVirtualDevice(vm.getConfig(), "CD/DVD");
+//	    VirtualCdrom cdrom =  new VirtualCdrom();
 	    VirtualCdromIsoBackingInfo cdDeviceBacking = new  VirtualCdromIsoBackingInfo();
 	    DatastoreSummary ds = findDatastoreSummary(vm, dsName);
+	    System.out.println("Datastore: "+ds.getName()+" "+ds.getType()+" "+(ds.getCapacity()/1000000)+" MB");
 	    cdDeviceBacking.setDatastore(ds.getDatastore());
-	    cdDeviceBacking.setFileName("[" + dsName +"] "+ vm.getName() 
-	        + "/" + isoName + ".iso");
-	    VirtualDevice vd = getIDEController(vm);          
+	    cdDeviceBacking.setFileName("[" + dsName +"] "+ //vm.getName() + 
+	        "/" + isoName);
 	    cdrom.setBacking(cdDeviceBacking);                    
-	    cdrom.setControllerKey(vd.getKey());
-	    cdrom.setUnitNumber(vd.getUnitNumber());
-	    cdrom.setKey(-1);          
 
+	    System.out.println("Connectable:"+cdrom.connectable+" "+cdrom.connectable.allowGuestControl+" "+cdrom.connectable.startConnected+" "+cdrom.connectable.connected);
+	    //cdrom.connectable = new VirtualDeviceConnectInfo();
+	    cdrom.connectable.allowGuestControl = false;
+	    cdrom.connectable.startConnected = true;
+	    cdrom.connectable.connected = true;
+	    
 	    cdSpec.setDevice(cdrom);
 
 	    return cdSpec;          
@@ -182,12 +198,18 @@ public class VMCDTask extends Task {
 	  static VirtualDeviceConfigSpec createUnmountCdConfigSpec(VirtualMachine vm, String cdName) throws Exception 
 	  {
 	    VirtualDeviceConfigSpec cdSpec = new VirtualDeviceConfigSpec();
-	    cdSpec.setOperation(VirtualDeviceConfigSpecOperation.remove);
-	    VirtualCdrom cdRemove = (VirtualCdrom)findVirtualDevice(vm.getConfig(), cdName);
-	    if(cdRemove != null) 
+	    cdSpec.setOperation(VirtualDeviceConfigSpecOperation.edit);
+	    VirtualCdrom cdrom = (VirtualCdrom)findVirtualDevice(vm.getConfig(), "CD/DVD");
+	    if(cdrom != null) 
 	    {
-	      cdSpec.setDevice(cdRemove);
-	      return cdSpec;
+	    	System.out.println("Connectable:"+cdrom.connectable+" "+cdrom.connectable.allowGuestControl+" "+cdrom.connectable.startConnected+" "+cdrom.connectable.connected);
+		    //cdrom.connectable = new VirtualDeviceConnectInfo();
+		    cdrom.connectable.allowGuestControl = false;
+		    cdrom.connectable.startConnected = false;
+		    cdrom.connectable.connected = false;
+		    
+	    	cdSpec.setDevice(cdrom);
+	    	return cdSpec;
 	    }
 	    else 
 	    {
@@ -201,7 +223,8 @@ public class VMCDTask extends Task {
 	    VirtualDevice [] devices = vmConfig.getHardware().getDevice();
 	    for(int i=0;i<devices.length;i++)
 	    {
-	      if(devices[i].getDeviceInfo().getLabel().equals(name))
+	    	System.out.println("Device-Names: "+devices[i].getDeviceInfo().getLabel());
+	      if(devices[i].getDeviceInfo().getLabel().startsWith(name))
 	      {                             
 	        return devices[i];
 	      }
@@ -248,6 +271,7 @@ public class VMCDTask extends Task {
 	        break;
 	      }
 	    }
+	    if (ideController==null) throw new BuildException("No IDE Controller found!");
 	    return ideController;
 	  }
 

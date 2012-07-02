@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 
 <project name="test" default="test" basedir=".">
-	<taskdef name="string" classname="de.mk.ant.StringTask" classpath="bin"/>
+	<taskdef name="string" classname="de.mk.ant.StringTask" classpath="AntExtension.jar"/>
+	<taskdef name="xmlattribute" classname="de.mk.ant.XMLTask" classpath="AntExtension.jar"/>
 	
-	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="bin"/>
-	<typedef name="karotzaction" classname="de.mk.ant.KarotzTask$AntKarotzAction" classpath="bin"/>
+	<taskdef name="vmpower" classname="de.mk.ant.VMPowerTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<taskdef name="vmcd" classname="de.mk.ant.VMCDTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<taskdef name="vmsnapshot" classname="de.mk.ant.VMSnapshotTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	
+	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar"/>
+	<typedef name="karotzaction" classname="de.mk.ant.KarotzTask$AntKarotzAction" classpath="AntExtension.jar"/>
+
 	
 	<target name="test" >
 		<echo>Test ${test} </echo>
@@ -15,14 +21,43 @@
 		<string property="test" value="unhappy" operation="substring" start="2" end="6" />
 		<echo>Test ${test} </echo>
 		
-		<property name="version" value="KKKKK_V1.2.3.4" />
+		<property name="version" value="KIKIS_V1.2.3.4" />
 		<echo>version ${version} </echo>
 		<string property="subversion" value="${version}" operation="end" index="7" />
 		<echo>version ${subversion} </echo>
 		
+		<string property="check" value="true" operation="checktrue"  />
+		<echo>check ${check} </echo>
+		<string property="check" value="false" operation="checktrue" />
+		<echo>check ${check} </echo>
+		<string property="check" value="${version}" operation="checktrue" />
+		<echo>check ${check} </echo>
+		<string property="check" value="${trullala}" operation="checktrue"  />
+		<echo>check ${check} </echo>
+		<property name="checktest" value="true" />
+		<string property="check" value="${checktest}" operation="checktrue" />
+		<echo>check ${check} </echo>
+		
+		<xmlattribute xmlfile="testbuild.xml" element="project" attribute="name" property="elementname" />
+		<echo>elementName ${elementname} </echo>
+		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
+
 			<karotzaction name="name" />
+
 		</karotz>
+
+		
+		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="list" />
+<!--		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="help" />  -->
+
+		
+		<!-- [TIA_VMFS]ISOs/V1.2.0.16.iso -->
+		<vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="mount" datastore="TIA_VMFS" isofile="ISOs/V1.2.0.16.iso" />
+		<vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="unmount"   />
+
+		<vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list"   />
+		<vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="revert" snapshot="Jenkins"  />
 		
 	</target>		
 </project>	

@@ -3,7 +3,6 @@ package de.mk.ant;
 import java.util.Arrays;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
@@ -89,13 +88,13 @@ public class StringTask extends Task {
 		java.lang.String n = getProperty();
 		PropertyHelper ph = PropertyHelper.getPropertyHelper(getProject());
 		Class [] parameters = {java.lang.String.class, Object.class };
-		try {
-			log("setNewValue:PropertyHelper:"+ph.getClass()+" newValue-Method"+Arrays.asList(ph.getClass().getMethods()));
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		log("setNewValue:name="+n+" value="+v);
+//		try {
+//			log("setNewValue:PropertyHelper:"+ph.getClass()+" newValue-Method"+Arrays.asList(ph.getClass().getMethods()));
+//		} catch (SecurityException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+		log("String:setNewValue:name="+n+" value="+v);
 		ph.setProperty(null, n, v, true);
 //		if (ph.getUserProperty(n) == null) {
 //        } else {
@@ -143,6 +142,23 @@ public class StringTask extends Task {
 				}
 				
 				java.lang.String newValue = value.substring(start);
+				v.setNewValue(newValue);
+			}
+		},
+		checktrue {
+			public void execute(StringTask v) {
+				java.lang.String value = v.getValue();
+				java.lang.String newValue = "false";
+				if (value==null) {
+					newValue = "false";
+				} else if (value.equalsIgnoreCase("true")) {
+					newValue = "true";
+				} else if (value.equalsIgnoreCase("false")) {
+					newValue = "false";
+				}
+				
+//				v.log("String:execute: value="+value+" -> "+newValue);
+				
 				v.setNewValue(newValue);
 			}
 		},
