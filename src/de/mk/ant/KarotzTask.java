@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.peripheralware.karotz.action.KarotzAction;
+import org.peripheralware.karotz.action.multimedia.PlayMultimediaAction;
+import org.peripheralware.karotz.action.tts.SpeakAction;
 import org.peripheralware.karotz.client.KarotzClient;
 import org.peripheralware.karotz.publisher.KarotzActionPublisher;
 
@@ -14,7 +16,7 @@ public class KarotzTask extends Task  {
 	String apiKey;
 	String secretKey;
 	String installId;
-	List<AntKarotzAction> actions = new ArrayList<AntKarotzAction>(); 
+	List<KarotzActionFactory> actions = new ArrayList<KarotzActionFactory>(); 
 	
 	public String getApiKey() {
 		return apiKey;
@@ -40,14 +42,21 @@ public class KarotzTask extends Task  {
 		this.installId = installId;
 	}
 
-	public AntKarotzAction createKarotzAction() {
-		return new AntKarotzAction();
+	public KarotzActionFactory createKarotzSpeak() {
+		return new KarotzSpeakAction();
 	}
 
-	public void addKarotzAction(AntKarotzAction a) {
+	public void addKarotzSpeak(KarotzActionFactory a) {
 		actions.add(a);
 	}
 	
+	public KarotzActionFactory createKarotzPlay() {
+		return new KarotzPlayAction();
+	}
+
+	public void addKarotzPlay(KarotzActionFactory a) {
+		actions.add(a);
+	}
 
 
 	@Override
@@ -56,11 +65,11 @@ public class KarotzTask extends Task  {
 		KarotzClient client = new KarotzClient(apiKey,secretKey,installId);
 		KarotzActionPublisher karotzActionPublisher = new KarotzActionPublisher(client);
 		try {
-		client.startInteractiveMode();
+			client.startInteractiveMode();
 		} catch(Exception e) {
 			throw new BuildException(e);
 		}
-		for(AntKarotzAction a : actions) {
+		for(KarotzActionFactory a : actions) {
 			try {
 				karotzActionPublisher.performAction(a.action());
 			} catch (Exception e) {
@@ -71,30 +80,50 @@ public class KarotzTask extends Task  {
 		
 	}	
 	
-	public class AntKarotzAction {
+	interface KarotzActionFactory {
+		KarotzAction action();
+	}
+	
+	public class KarotzSpeakAction implements KarotzActionFactory {
 		
-		String type;
-		String text;
-		
-		
-		public String getType() {
-			return type;
-		}
-
-		public void setType(String type) {
-			this.type = type;
-		}
+	    private String text;
+	    private String language = "EN";
 
 		public String getText() {
 			return text;
 		}
 
-		public void setText(String text) {
-			this.text = text;
+		public void setText(String textToSpeak) {
+			this.text = textToSpeak;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+
+		public void setLanguage(String language) {
+			this.language = language;
 		}
 
 		public KarotzAction action() {
-			return null;
+			return new SpeakAction(getText(), getLanguage());
+		}
+	}
+	
+	public class KarotzPlayAction implements KarotzActionFactory {
+		
+		String url;
+		
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
+		public KarotzAction action() {
+			return new PlayMultimediaAction(getUrl());
 		}
 	}
 }

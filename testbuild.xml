@@ -8,8 +8,9 @@
 	<taskdef name="vmcd" classname="de.mk.ant.VMCDTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmsnapshot" classname="de.mk.ant.VMSnapshotTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	
-	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar"/>
-	<typedef name="karotzaction" classname="de.mk.ant.KarotzTask$AntKarotzAction" classpath="AntExtension.jar"/>
+	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
+	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
+	<typedef name="karotzplay" classname="de.mk.ant.KarotzTask$KarotzPlayAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 
 	
 	<target name="test" >
@@ -43,7 +44,8 @@
 		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
-			<karotzaction name="name" />
+			<karotzplay url="http://www.lastfm.com/play/easyrider.mp3" />
+			<karotzspeak text="name" />
 
 		</karotz>
 
