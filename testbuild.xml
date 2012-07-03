@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 
 <project name="test" default="test" basedir=".">
+
+	<property file="testbuild.properties" />
+
 	<taskdef name="string" classname="de.mk.ant.StringTask" classpath="AntExtension.jar"/>
 	<taskdef name="xmlattribute" classname="de.mk.ant.XMLTask" classpath="AntExtension.jar"/>
 	

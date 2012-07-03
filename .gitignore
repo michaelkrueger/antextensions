@@ -4,3 +4,6 @@
 *.jar
 *.war
 *.ear
+
+#Properties file
+testbuild.properties
