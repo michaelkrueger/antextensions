@@ -3,6 +3,8 @@ package de.mk.ant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.peripheralware.karotz.action.KarotzAction;
@@ -62,20 +64,28 @@ public class KarotzTask extends Task  {
 	@Override
 	public void execute() throws BuildException {
 
+		Logger.getLogger(KarotzTask.class).addAppender(new ConsoleAppender());
+		
+		
 		KarotzClient client = new KarotzClient(apiKey,secretKey,installId);
 		KarotzActionPublisher karotzActionPublisher = new KarotzActionPublisher(client);
 		try {
 			client.startInteractiveMode();
+			
+			for(KarotzActionFactory a : actions) {
+				try {
+					karotzActionPublisher.performAction(a.action());
+					
+					 
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new BuildException(e);
+				}
+			}
+			 
+			client.stopInteractiveMode();
 		} catch(Exception e) {
 			throw new BuildException(e);
-		}
-		for(KarotzActionFactory a : actions) {
-			try {
-				karotzActionPublisher.performAction(a.action());
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new BuildException(e);
-			}
 		}
 		
 	}	

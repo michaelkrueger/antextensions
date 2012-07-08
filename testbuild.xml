@@ -47,22 +47,22 @@
 		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
-			<karotzplay url="http://www.lastfm.com/play/easyrider.mp3" />
-			<karotzspeak text="name" />
 
+			<karotzspeak language="DE" text="Hurzelpurz und Wuddiwutz gingen in den Wald. Es war sehr finster und auch sehr bitter kalt! Sie kamen an ein Häuschen mit Zuckerguß umhüllt. Wer mag der Herr in diesem Häuschen sein?" />
+			<karotzplay url="http://192.168.1.102:8080/job/CreateAvi/ws/test.mp3" />
 		</karotz>
 
-		
-		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="list" />
-<!--		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="help" />  -->
+		<!--  Es war sehr finster und auch sehr bitter kalt! Sie kamen an ein Häuschen mit Zuckerguß umhüllt. Wer mag der Herr in diesem Häuschen sein? -->
+<!-- 		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="list" /> -->
+<!--		<vmpower host="esx" username="admin" password="pwd" vmname="leer" operation="help" /> -->
 
 		
 		<!-- [TIA_VMFS]ISOs/V1.2.0.16.iso -->
-		<vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="mount" datastore="TIA_VMFS" isofile="ISOs/V1.2.0.16.iso" />
-		<vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="unmount"   />
+		<!--  <vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="mount" datastore="TIA_VMFS" isofile="ISOs/V1.2.0.16.iso" />  -->
+		<!--  <vmcd host="esx" username="admin" password="pwd" vmname="db3-vm" operation="unmount"   />  -->
 
-		<vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list"   />
-		<vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="revert" snapshot="Jenkins"  />
+		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list"   /> -->
+		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="revert" snapshot="Jenkins"  /> -->
 		
 	</target>		
 </project>	
