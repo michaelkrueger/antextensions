@@ -1,0 +1,13 @@
+﻿<descriptor>
+	<version>1.0</version>
+	    <accesses>
+	        <access>tts</access>
+	        <access>ears</access>
+	        <access>led</access>
+	        <access>multimedia</access>
+	    </accesses>
+	    <deployment>external</deployment>
+	    <parameters>
+	        <parameter key="showInstallUuid" value="true"/>
+	    </parameters>
+</descriptor>
