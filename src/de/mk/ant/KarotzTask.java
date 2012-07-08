@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.peripheralware.karotz.action.KarotzAction;
+import org.peripheralware.karotz.action.led.LedFadeAction;
 import org.peripheralware.karotz.action.multimedia.PlayMultimediaAction;
 import org.peripheralware.karotz.action.tts.SpeakAction;
 import org.peripheralware.karotz.client.KarotzClient;
@@ -57,6 +58,14 @@ public class KarotzTask extends Task  {
 	}
 
 	public void addKarotzPlay(KarotzActionFactory a) {
+		actions.add(a);
+	}
+	
+	public KarotzActionFactory createKarotzLed() {
+		return new KarotzLedAction();
+	}
+
+	public void addLedPlay(KarotzActionFactory a) {
 		actions.add(a);
 	}
 
@@ -134,6 +143,25 @@ public class KarotzTask extends Task  {
 
 		public KarotzAction action() {
 			return new PlayMultimediaAction(getUrl());
+		}
+	}
+	
+	public class KarotzLedAction implements KarotzActionFactory {
+
+		String color;
+		
+		public String getColor() {
+			return color;
+		}
+
+		public void setColor(String color) {
+			this.color = color;
+		}
+
+		@Override
+		public KarotzAction action() {
+			
+			return new LedFadeAction(getColor(), 5000L);
 		}
 	}
 }

@@ -14,6 +14,7 @@
 	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzplay" classname="de.mk.ant.KarotzTask$KarotzPlayAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
+	<typedef name="karotzled" classname="de.mk.ant.KarotzTask$KarotzLedAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 
 	
 	<target name="test" >
@@ -47,9 +48,9 @@
 		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
-
+			<karotzled color="FFFF00" />
 			<karotzspeak language="DE" text="Hurzelpurz und Wuddiwutz gingen in den Wald. Es war sehr finster und auch sehr bitter kalt! Sie kamen an ein Häuschen mit Zuckerguß umhüllt. Wer mag der Herr in diesem Häuschen sein?" />
-			<karotzplay url="http://192.168.1.102:8080/job/CreateAvi/ws/test.mp3" />
+			<!-- <karotzplay url="http://192.168.1.102:8080/job/CreateAvi/ws/test.mp3" /> -->
 		</karotz>
 
 		<!--  Es war sehr finster und auch sehr bitter kalt! Sie kamen an ein Häuschen mit Zuckerguß umhüllt. Wer mag der Herr in diesem Häuschen sein? -->
