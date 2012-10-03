@@ -122,6 +122,7 @@ public class VMProcessTask extends Task {
 	}
 
 	public String getArguments() {
+		if (arguments==null) return "";
 		return arguments;
 	}
 
@@ -146,6 +147,7 @@ public class VMProcessTask extends Task {
 	}
 
 	public String getWorkingDirectory() {
+		if (workingDirectory==null) return ".";
 		return workingDirectory;
 	}
 
