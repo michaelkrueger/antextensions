@@ -66,8 +66,8 @@
 		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list"   /> -->
 		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="revert" snapshot="Jenkins"  /> -->
 		
-		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list" /> -->
-		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" workingdirectory="." executable="notepad.exe" /> -->
+		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list" guestuser="root" guestpassword="password" /> -->
+		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" guestuser="root" guestpassword="password" workingdirectory="." executable="notepad.exe" /> -->
 		
 		
 	</target>		
