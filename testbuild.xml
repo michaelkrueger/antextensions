@@ -10,6 +10,7 @@
 	<taskdef name="vmpower" classname="de.mk.ant.VMPowerTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmcd" classname="de.mk.ant.VMCDTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmsnapshot" classname="de.mk.ant.VMSnapshotTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<taskdef name="vmprocess" classname="de.mk.ant.VMProcessTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	
 	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
@@ -64,6 +65,10 @@
 
 		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list"   /> -->
 		<!-- <vmsnapshot host="esx" username="admin" password="pwd" vmname="db3-vm" operation="revert" snapshot="Jenkins"  /> -->
+		
+		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list" /> -->
+		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" workingdirectory="." executable="notepad.exe" /> -->
+		
 		
 	</target>		
 </project>	
