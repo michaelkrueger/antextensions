@@ -161,6 +161,13 @@ public class VMProcessTask extends Task {
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
 				System.out.println("Start Process in VM: "+ vm.getName()+ " "+task.getExecutable()+" "+task.getArguments());
 				
+			    if(!"guestToolsRunning".equals(vm.getGuest().toolsRunningStatus))
+			    {
+			      System.out.println("The VMware Tools is not running in the Guest OS on VM: " + vm.getName());
+			      System.out.println("Exiting...");
+			      return;
+			    }
+				
 				GuestOperationsManager gom = si.getGuestOperationsManager();
 				GuestProcessManager gpm = gom.getProcessManager(vm);
 				
@@ -181,6 +188,13 @@ public class VMProcessTask extends Task {
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
 				System.out.println("List Processes in VM:"+vm.getName());
 
+				if(!"guestToolsRunning".equals(vm.getGuest().toolsRunningStatus))
+			    {
+			      System.out.println("The VMware Tools is not running in the Guest OS on VM: " + vm.getName());
+			      System.out.println("Exiting...");
+			      return;
+			    }
+				
 				GuestOperationsManager gom = si.getGuestOperationsManager();
 				GuestProcessManager gpm = gom.getProcessManager(vm);
 				
