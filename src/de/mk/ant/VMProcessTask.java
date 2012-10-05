@@ -1,6 +1,7 @@
 package de.mk.ant;
 
 import java.net.URL;
+import java.text.DateFormat;
 import java.util.Arrays;
 
 import org.apache.tools.ant.BuildException;
@@ -30,6 +31,7 @@ public class VMProcessTask extends Task {
 	String arguments;
 	String guestUser;
 	String guestPassword;
+	boolean wait=true;
 	
 	
 	
@@ -155,6 +157,13 @@ public class VMProcessTask extends Task {
 		this.workingDirectory = workingDirectory;
 	}
 
+	public boolean isWait() {
+		return wait;
+	}
+
+	public void setWait(boolean wait) {
+		this.wait = wait;
+	}
 
 	private enum Operations {
 		start { 
@@ -183,6 +192,21 @@ public class VMProcessTask extends Task {
 			    
 			    long pid = gpm.startProgramInGuest(npa, spec);
 			    System.out.println("pid: " + pid);
+			    
+			    if (task.isWait()) {
+			    	boolean finished = false;
+			    	long[] pids = {pid};
+			    	
+			    	while (!finished) {
+			    		Thread.sleep(1000L);
+			    		
+			    		GuestProcessInfo[] infos = gpm.listProcessesInGuest(npa, pids);
+			    		if (infos[0].getEndTime()!=null || infos[0].getExitCode()!=null) {
+			    			System.out.println("Process "+pid+" exited: Errorcode:"+infos[0].getExitCode());
+			    			finished=true;
+			    		}
+			    	}
+			    }
 			}
 		}, list { 
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
@@ -206,7 +230,7 @@ public class VMProcessTask extends Task {
 				GuestProcessInfo[] infos = gpm.listProcessesInGuest(npa, new long[0]);
 				
 				for(GuestProcessInfo i : infos) {
-					System.out.println("Process: "+i.name+"("+i.owner+") "+i.pid+" - started: "+i.getStartTime()+"-"+i.getEndTime()+" CMD> "+i.getCmdLine());
+					System.out.println("Process: "+i.name+"("+i.owner+") "+i.pid+" CMD> "+i.getCmdLine());
 				}
 			}
 		};
