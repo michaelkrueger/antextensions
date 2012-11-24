@@ -256,6 +256,19 @@ public class VMProcessTask extends Task {
 					System.out.println("Process: "+i.name+"("+i.owner+") "+i.pid+" CMD> "+i.getCmdLine());
 				}
 			}
+		}, installVmWareUtils { 
+			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
+				System.out.println("Install VmWareUtils in VM:"+vm.getName());
+				
+				vm.mountToolsInstaller();
+				System.out.println("Tools mounted ");
+				
+				vm.upgradeTools_Task(task.getArguments());
+				System.out.println("Tools upgrade ");
+				
+				vm.unmountToolsInstaller();
+				System.out.println("Tools unmounted ");
+			}
 		};
 		
 		abstract public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task) throws Exception ;
