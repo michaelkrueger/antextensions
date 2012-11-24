@@ -256,7 +256,13 @@ public class VMProcessTask extends Task {
 					System.out.println("Process: "+i.name+"("+i.owner+") "+i.pid+" CMD> "+i.getCmdLine());
 				}
 			}
+			
+// See: http:// communities.vmware.com/servlet/JiveServlet/previewBody/12413-102-4-13370/VMware%20Tools%20-%20Unattended_Install.pdf
+// Possible Arguments: Windows: 
+//		/S /v"/qn REBOOT=R"
+			
 		}, installVmWareUtils { 
+			
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
 				System.out.println("Install VmWareUtils in VM:"+vm.getName());
 				
