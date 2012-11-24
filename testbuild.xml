@@ -12,6 +12,10 @@
 	<taskdef name="vmsnapshot" classname="de.mk.ant.VMSnapshotTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmprocess" classname="de.mk.ant.VMProcessTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<typedef name="vmexec" classname="de.mk.ant.VMProcessTask$VmExec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<taskdef name="vmcreate" classname="de.mk.ant.VMCreateTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<typedef name="vmdiskspec" classname="de.mk.ant.VMCreateTask$DiskSpec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<typedef name="vmnicspec" classname="de.mk.ant.VMCreateTask$NicSpec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+
 	
 	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
@@ -51,6 +55,12 @@
 		<vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" guestuser="root" guestpassword="password" workingdirectory="." executable="notepad.exe" > 
 		    <vmexec workingdirectory="." executable="notepad.exe" arguments="trullala.txt" wait="false" />
 		</vmprocess>
+		
+ 
+		<vmcreate host="esx" username="admin" password="pwd" vmname="db3-vm" datacenter="Datacenter" datastore="LUN1" cpucount="1" guestOsId="sles10Guest" annotation="Created by AntExtention" > 
+		    <diskspec disksizegb="10" />
+			<nicspec  netName="Network 1" nicName="NIC1" />
+		</vmcreate>
 		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
