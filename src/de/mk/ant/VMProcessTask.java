@@ -1,8 +1,9 @@
 package de.mk.ant;
 
 import java.net.URL;
-import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -33,6 +34,7 @@ public class VMProcessTask extends Task {
 	String guestPassword;
 	boolean wait=true;
 	
+	List<VmExec> executes = new ArrayList<VmExec>();
 	
 	
 	public void execute() throws BuildException {
@@ -41,6 +43,16 @@ public class VMProcessTask extends Task {
 			operation = Operations.valueOf(getOperation());
 		} catch (IllegalArgumentException ex) {
 			throw new BuildException("Operation "+getOperation()+" unknown! Valid: "+Arrays.asList(Operations.values()));			
+		}
+		
+		//Create vmexecute from attribute:
+		if (getExecutable()!=null) {
+			VmExec v = new VmExec();
+			v.setExecutable(getExecutable());
+			v.setArguments(getArguments());
+			v.setWorkingDirectory(getWorkingDirectory());
+			v.setWait(isWait());
+			executes.add(v);
 		}
 		
 		ServiceInstance si = null;
@@ -165,6 +177,35 @@ public class VMProcessTask extends Task {
 		this.wait = wait;
 	}
 
+	public VmExec createVmExec() {
+		return new VmExec();
+	}
+
+	public void addVmExec(VmExec a) {
+		executes.add(a);
+	}
+		
+	private void execute(GuestProcessManager gpm, NamePasswordAuthentication npa, VmExec exec) throws Exception {
+		GuestProgramSpec spec = exec.getVmWareSpec();
+	    long pid = gpm.startProgramInGuest(npa, spec);
+	    System.out.println("pid: " + pid);
+	    
+	    if (exec.isWait()) {
+	    	boolean finished = false;
+	    	long[] pids = {pid};
+	    	
+	    	while (!finished) {
+	    		Thread.sleep(1000L);
+	    		
+	    		GuestProcessInfo[] infos = gpm.listProcessesInGuest(npa, pids);
+	    		if (infos[0].getEndTime()!=null || infos[0].getExitCode()!=null) {
+	    			System.out.println("Process "+pid+" exited: Errorcode:"+infos[0].getExitCode());
+	    			finished=true;
+	    		}
+	    	}
+	    }
+	}
+	
 	private enum Operations {
 		start { 
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
@@ -185,28 +226,10 @@ public class VMProcessTask extends Task {
 				npa.username = task.getGuestUser();
 				npa.password = task.getGuestPassword();
 				
-				GuestProgramSpec spec = new GuestProgramSpec();
-			    spec.programPath = task.getExecutable();
-			    spec.arguments = task.getArguments();
-			    spec.workingDirectory = task.getWorkingDirectory();
-			    
-			    long pid = gpm.startProgramInGuest(npa, spec);
-			    System.out.println("pid: " + pid);
-			    
-			    if (task.isWait()) {
-			    	boolean finished = false;
-			    	long[] pids = {pid};
-			    	
-			    	while (!finished) {
-			    		Thread.sleep(1000L);
-			    		
-			    		GuestProcessInfo[] infos = gpm.listProcessesInGuest(npa, pids);
-			    		if (infos[0].getEndTime()!=null || infos[0].getExitCode()!=null) {
-			    			System.out.println("Process "+pid+" exited: Errorcode:"+infos[0].getExitCode());
-			    			finished=true;
-			    		}
-			    	}
-			    }
+				//Create VMEXEC from attributes
+				for(VmExec exec : task.executes) {					
+					task.execute(gpm, npa, exec);
+				}
 			}
 		}, list { 
 			public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task)  throws Exception {
@@ -237,4 +260,48 @@ public class VMProcessTask extends Task {
 		
 		abstract public void execute(ServiceInstance si, VirtualMachine vm, VMProcessTask task) throws Exception ;
 	};
+	
+	public class VmExec {
+		String workingDirectory;
+		String executable;
+		String arguments;
+		boolean wait=true;
+		
+		public String getWorkingDirectory() {
+			return workingDirectory;
+		}
+		public void setWorkingDirectory(String workingDirectory) {
+			this.workingDirectory = workingDirectory;
+		}
+		public String getExecutable() {
+			return executable;
+		}
+		public void setExecutable(String executable) {
+			this.executable = executable;
+		}
+		public String getArguments() {
+			return arguments;
+		}
+		public void setArguments(String arguments) {
+			this.arguments = arguments;
+		}
+		public boolean isWait() {
+			return wait;
+		}
+		public boolean getWait() {
+			return wait;
+		}
+		public void setWait(boolean wait) {
+			this.wait = wait;
+		}
+		
+		public GuestProgramSpec getVmWareSpec() {
+			GuestProgramSpec spec = new GuestProgramSpec();
+		    spec.programPath = getExecutable();
+		    spec.arguments = getArguments();
+		    spec.workingDirectory = getWorkingDirectory();
+		    
+		    return spec;
+		}
+	}
 }

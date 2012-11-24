@@ -11,6 +11,7 @@
 	<taskdef name="vmcd" classname="de.mk.ant.VMCDTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmsnapshot" classname="de.mk.ant.VMSnapshotTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<taskdef name="vmprocess" classname="de.mk.ant.VMProcessTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	<typedef name="vmexec" classname="de.mk.ant.VMProcessTask$VmExec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	
 	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
@@ -47,6 +48,10 @@
 		<xmlattribute xmlfile="testbuild.xml" element="project" attribute="name" property="elementname" />
 		<echo>elementName ${elementname} </echo>
 		
+		<vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" guestuser="root" guestpassword="password" workingdirectory="." executable="notepad.exe" > 
+		    <vmexec workingdirectory="." executable="notepad.exe" arguments="trullala.txt" wait="false" />
+		</vmprocess>
+		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
 			<karotzled color="FFFF00" />
@@ -68,7 +73,6 @@
 		
 		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="list" guestuser="root" guestpassword="password" /> -->
 		<!-- <vmprocess host="esx" username="admin" password="pwd" vmname="db3-vm" operation="start" guestuser="root" guestpassword="password" workingdirectory="." executable="notepad.exe" /> -->
-		
 		
 	</target>		
 </project>	
