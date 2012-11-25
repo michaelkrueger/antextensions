@@ -42,7 +42,7 @@ public class VMChangeTask extends Task {
 	String password;
 	String operation;
 	String datacenter;
-	String vmbasis;
+	String vmName;
 	Long   memory;
 	Integer cpus;
 	Integer cores;
@@ -76,18 +76,16 @@ public class VMChangeTask extends Task {
 				return;
 			}
 			VirtualMachine vm = (VirtualMachine) new InventoryNavigator(
-					rootFolder).searchManagedEntity("VirtualMachine", vmbasis );
+					rootFolder).searchManagedEntity("VirtualMachine", vmName );
 
-			Datacenter dc = (Datacenter) si.getSearchIndex().findByInventoryPath(getDatacenter());
-			
-			if(vm==null || dc==null) {
-				System.out.println("No VM " + vmbasis + " found or datacenter "+getDatacenter()+" found!");
+			if(vm==null  ) {
+				System.out.println("No VM " + vmName + " found  ");
 				si.getServerConnection().logout();
-				throw new BuildException("No VM " + vmbasis + " found");
+				throw new BuildException("No VM " + vmName + " found");
 			}
 
 
-			VirtualMachineConfigSpec changeSpec = operation.execute(vm,dc,this);
+			VirtualMachineConfigSpec changeSpec = operation.execute(vm,this);
 			
 			com.vmware.vim25.mo.Task task = vm.reconfigVM_Task(changeSpec);
 			System.out.println("Launching the VM clone task. It might take a while. Please wait for the result ...");
@@ -139,12 +137,12 @@ public class VMChangeTask extends Task {
 		this.password = password;
 	}
 
-	public String getVmbasis() {
-		return vmbasis;
+	public String getVmName() {
+		return vmName;
 	}
 
-	public void setVmbasis(String vmname) {
-		this.vmbasis = vmname;
+	public void setVmName(String vmname) {
+		this.vmName = vmname;
 	}
 	
 	public String getOperation() {
@@ -233,7 +231,7 @@ public class VMChangeTask extends Task {
 	
 	private enum Operations {
 		cpu { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask changeTask)  throws Exception {
 				System.out.println("CPU: "+vm.getName()+" ");
 				
 				VirtualMachineConfigSpec changeSpec = new VirtualMachineConfigSpec();
@@ -247,7 +245,7 @@ public class VMChangeTask extends Task {
 			}
 		}, 
 		memory { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask changeTask)  throws Exception {
 				System.out.println("Memory: "+vm.getName()+ " change to :"+changeTask.getMemory()+" MB");
 				
 				VirtualMachineConfigSpec changeSpec = new VirtualMachineConfigSpec();
@@ -259,7 +257,7 @@ public class VMChangeTask extends Task {
 			}
 		}, 
 		adddisk { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask changeTask)  throws Exception {
 				System.out.println("Add Disk: "+vm.getName());
 				VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 		         VirtualDeviceConfigSpec vdiskSpec = changeTask.getDiskDeviceConfigSpec(vm, "Add");
@@ -273,7 +271,7 @@ public class VMChangeTask extends Task {
 			}
 		}, 
 		removedisk { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,  VMChangeTask changeTask)  throws Exception {
 				System.out.println("Remove Disk: "+vm.getName());
 				VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 		         VirtualDeviceConfigSpec vdiskSpec = changeTask.getDiskDeviceConfigSpec(vm, "Remove");
@@ -287,7 +285,7 @@ public class VMChangeTask extends Task {
 			}
 		}, 	
 		addnic { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,  VMChangeTask changeTask)  throws Exception {
 				System.out.println("Add NIC: "+vm.getName());
 				VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 				VirtualDeviceConfigSpec nicSpek = changeTask.getNICDeviceConfigSpec(vm, "Add");
@@ -303,7 +301,7 @@ public class VMChangeTask extends Task {
 			}
 		},
 		removenic { 
-			public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter dc, VMChangeTask changeTask)  throws Exception {
+			public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask changeTask)  throws Exception {
 				System.out.println("Add NIC: "+vm.getName());
 				VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
 				VirtualDeviceConfigSpec nicSpek = changeTask.getNICDeviceConfigSpec(vm, "Remove");
@@ -319,14 +317,14 @@ public class VMChangeTask extends Task {
 			}
 		},		
 		list { 
-				public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter datacenter, VMChangeTask task)  throws Exception {
+				public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask task)  throws Exception {
 					System.out.println("List the VMs");
 					
 					return null;
 				}
 		};
 		
-		abstract public VirtualMachineConfigSpec execute(VirtualMachine vm, Datacenter datacenter, VMChangeTask task) throws Exception ;
+		abstract public VirtualMachineConfigSpec execute(VirtualMachine vm,   VMChangeTask task) throws Exception ;
 	};
 	
 	private VirtualDeviceConfigSpec getDiskDeviceConfigSpec(VirtualMachine vm, String ops) throws Exception
@@ -353,7 +351,7 @@ public class VMChangeTask extends Task {
 	         }
 	        
 	         unitNumber = test.length + 1;                
-	         String fileName = "["+dsName+"] "+ getVmbasis() + "/" + getDiskName() + ".vmdk";
+	         String fileName = "["+dsName+"] "+ getVmName() + "/" + getDiskName() + ".vmdk";
 	         
 	         diskfileBacking.setFileName(fileName);
 	         diskfileBacking.setDiskMode("persistent");
