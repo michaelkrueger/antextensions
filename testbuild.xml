@@ -15,7 +15,8 @@
 	<taskdef name="vmcreate" classname="de.mk.ant.VMCreateTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<typedef name="vmdiskspec" classname="de.mk.ant.VMCreateTask$DiskSpec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
 	<typedef name="vmnicspec" classname="de.mk.ant.VMCreateTask$NicSpec" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
-
+	<taskdef name="vmchange" classname="de.mk.ant.VMChangeTask" classpath="AntExtension.jar;lib/vijava-5.0.jar;lib/dom4j-1.6.1-hudson-3.jar"/>
+	
 	
 	<taskdef name="karotz" classname="de.mk.ant.KarotzTask" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
 	<typedef name="karotzspeak" classname="de.mk.ant.KarotzTask$KarotzSpeakAction" classpath="AntExtension.jar;lib/KarotzJavaAPI.jar"/>
@@ -61,6 +62,22 @@
 		    <diskspec disksizegb="10" />
 			<nicspec  netName="Network 1" nicName="NIC1" />
 		</vmcreate>
+		
+		<!-- operation : list,cpu,memory,adddisk, removedisk,addnic,removenic
+		     vmName;
+		     memory;
+		     cpus;
+		     cores;
+		     diskName;
+		     diskSizeMB;
+		     nicName;
+		     networkName; -->
+		
+		<vmchange host="esx" username="admin" password="pwd" vmname="db3-vm" operation="cpu" cpus="2" cores="2" />
+		<vmchange host="esx" username="admin" password="pwd" vmname="db3-vm" operation="memory" memory="1024" />
+		<vmchange host="esx" username="admin" password="pwd" vmname="db3-vm" operation="adddisk" diskName="Disk2" disksizemb="100" />
+			
+		
 		
 		<karotz apiKey="${api}" secretKey="${secret}" installId="${install}" >
 
